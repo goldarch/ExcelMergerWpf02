@@ -1,5 +1,7 @@
 ﻿## ExcelMergerWpf02 - 一款健壮、高性能的WPF Excel文件合并工具
 
+ ![image](https://raw.githubusercontent.com/goldarch/ExcelMergerWpf02/master/Assets/mainForm.png)  
+
 `ExcelMergerWpf02` 是一款专为高效、安全地合并多个结构相同的 Excel 文件而设计的桌面应用程序。它采用了一系列现代软件设计模式和健壮的错误处理机制，确保在处理大规模数据时依然保持高性能和稳定性。
 
 ### ✨ 主要优点
