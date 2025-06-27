@@ -1,0 +1,113 @@
+﻿<Window x:Class="ExcelMergerWpf02.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:ExcelMergerWpf02.ViewModels"
+        xmlns:core="clr-namespace:ExcelMergerWpf02.Core"
+        mc:Ignorable="d"
+        Title="Excel 合并工具 v2.0" Height="700" Width="800" MinHeight="550">
+    <Window.DataContext>
+        <viewModels:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <Style x:Key="StatusProgressBarStyle" TargetType="ProgressBar">
+            <Setter Property="Foreground" Value="#007ACC"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding TaskWrapper.CurrentState}" Value="{x:Static core:TaskExecutionState.Faulted}">
+                    <Setter Property="Foreground" Value="#D32F2F"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding TaskWrapper.CurrentState}" Value="{x:Static core:TaskExecutionState.Cancelled}">
+                    <Setter Property="Foreground" Value="#757575"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding TaskWrapper.CurrentState}" Value="{x:Static core:TaskExecutionState.Completed}">
+                    <Setter Property="Foreground" Value="#388E3C"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <GroupBox Header="设置" Grid.Row="0" Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="输出文件夹:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+                <DockPanel Grid.Row="0" Grid.Column="1">
+                    <Button Content="..." Command="{Binding SelectOutputFolderCommand}" DockPanel.Dock="Right" Width="40" Margin="5,5,0,5"/>
+                    <TextBox Text="{Binding OutputFolder, UpdateSourceTrigger=PropertyChanged}" Margin="5" VerticalContentAlignment="Center"/>
+                </DockPanel>
+                <Label Content="输出文件名:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding OutputFilename, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Grid.Column="1" Margin="5" VerticalContentAlignment="Center"/>
+                <Label Content="关键列索引 (A=0):" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding KeyColumnIndex}" Grid.Row="2" Grid.Column="1" Margin="5" VerticalContentAlignment="Center"/>
+                <Label Content="二级进度报告行数:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding ChunkSize}" Grid.Row="3" Grid.Column="1" Margin="5" VerticalContentAlignment="Center"/>
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Header="待合并文件列表 (可拖拽文件至此)" Grid.Row="1" Padding="5" Margin="0,10,0,0">
+            <DockPanel>
+                <Button Content="清空列表" Command="{Binding ClearListCommand}" DockPanel.Dock="Bottom" Margin="5"/>
+                <ListView ItemsSource="{Binding FilesToMerge}"
+                          AllowDrop="True"
+                          DragEnter="ListView_DragEnter"
+                          Drop="ListView_Drop"
+                          SelectionMode="Single">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="文件名" DisplayMemberBinding="{Binding FileName}" Width="250"/>
+                            <GridViewColumn Header="状态" DisplayMemberBinding="{Binding Status, Mode=OneWay}" Width="180"/>
+                            <GridViewColumn Header="完整路径" DisplayMemberBinding="{Binding FilePath}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </DockPanel>
+        </GroupBox>
+
+        <GroupBox Header="总体进度" Grid.Row="2" Padding="10" Margin="0,10,0,0">
+            <StackPanel>
+                <Grid>
+                    <ProgressBar Value="{Binding LastProgressReport.ProgressValue, Mode=OneWay, FallbackValue=0}" Height="25" Style="{StaticResource StatusProgressBarStyle}"/>
+                    <TextBlock Text="{Binding LastProgressReport.ProgressText, Mode=OneWay}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="White"
+                               FontWeight="Bold">
+                        <TextBlock.Effect>
+                            <DropShadowEffect ShadowDepth="1" Color="Black" Opacity="0.5" BlurRadius="2"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Grid>
+                <TextBlock Text="{Binding LastProgressReport.Content, Mode=OneWay, FallbackValue='等待开始...'}" 
+                           HorizontalAlignment="Center" Margin="0,8,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Header="日志" Grid.Row="3" Padding="5" Margin="0,10,0,0">
+            <ListBox x:Name="LogListBox" ItemsSource="{Binding LogMessages}"/>
+        </GroupBox>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="4" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="取消合并" Command="{Binding CancelMergeCommand}" Height="40" Width="120" FontSize="16" Margin="0,0,10,0"/>
+            <Button Content="开始合并" Command="{Binding StartMergeCommand}" Height="40" Width="120" FontSize="16" FontWeight="Bold"/>
+        </StackPanel>
+    </Grid>
+</Window>
